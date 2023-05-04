@@ -27,6 +27,8 @@ import torch.utils.data
 from torch import nn
 
 from tqdm import tqdm
+import torch.cuda.profiler as NCU
+import torch.profiler as TF
 
 import torchvision
 from torchvision import transforms
@@ -60,14 +62,14 @@ def get_parser():
     parser = argparse.ArgumentParser(description='Classification quantization flow script')
 
     parser.add_argument('--data-dir', '-d', type=str, default='./tiny-imagenet-200/', help='input data folder', required=True)
-    parser.add_argument('--model-name', '-m', default='resnet50', help='model name: default resnet50')
+    parser.add_argument('--model-name', '-m', default='resnet101', help='model name: default resnet50')
     parser.add_argument('--disable-pcq', '-dpcq', action="store_true", help='disable per-channel quantization for weights')
     parser.add_argument('--out-dir', '-o', default='./outputs', help='output folder: default /tmp')
     parser.add_argument('--print-freq', '-pf', type=int, default=20, help='evaluation print frequency: default 20')
     parser.add_argument('--threshold', '-t', type=float, default=-1.0, help='top1 accuracy threshold (less than 0.0 means no comparison): default -1.0')
 
-    parser.add_argument('--batch-size-train', type=int, default=2048, help='batch size for training: default 128')
-    parser.add_argument('--batch-size-test', type=int, default=2048, help='batch size for testing: default 128')
+    parser.add_argument('--batch-size-train', type=int, default=1024, help='batch size for training: default 128')
+    parser.add_argument('--batch-size-test', type=int, default=1024, help='batch size for testing: default 128')
     parser.add_argument('--batch-size-onnx', type=int, default=1, help='batch size for onnx: default 1')
 
     parser.add_argument('--seed', type=int, default=12345, help='random seed: default 12345')
@@ -167,7 +169,7 @@ def prepare_model(
     model.cuda()
 
     ## Prepare the data loaders
-    traindir = os.path.join(data_dir, 'train')
+    traindir = os.path.join(data_dir, '/imagenet/val')
     valdir = os.path.join(data_dir, '/imagenet/val')
     _args = collections.namedtuple("mock_args", ["model", "distributed", "cache_dataset", "val_resize_size", "val_crop_size", "train_crop_size", "interpolation", "weights"])
     dataset, dataset_test, train_sampler, test_sampler = load_data(
@@ -209,13 +211,21 @@ def main(cmdline_args):
         args.pretrained,
         args.ckpt_path,
         args.ckpt_url)
-
+    
+    
     ## Initial accuracy evaluation
     criterion = nn.CrossEntropyLoss()
-    with torch.no_grad():
-        print('Initial evaluation:')
-        top1_initial = evaluate(model, criterion, data_loader_test, device="cuda", print_freq=args.print_freq)
-
+    # with torch.no_grad():
+        # print('Initial evaluation:')
+        # NCU.start()
+        # profiler.start()
+        # top1_initial = evaluate(model, criterion, data_loader_test, profile=False, device="cuda", print_freq=args.print_freq)
+        # profiler.step()
+    # profiler.stop()
+        # NCU.stop()
+    # import pdb; pdb.set_trace()
+    
+    
     ## Calibrate the model
     with torch.no_grad():
         st = time.time()
@@ -375,7 +385,7 @@ def calibrate_model(model, model_name, data_loader, num_calib_batch, calibrator,
                 torch.save(model.state_dict(), calib_output)
 
             for method in ["mse", "entropy"]:
-                print(F"{method} calibration")
+                # print(F"{method} calibration")
                 compute_amax(model, method=method)
                 calib_output = os.path.join(
                     out_dir,

@@ -1,0 +1,51 @@
+[W interface.cpp:47] Warning: Loading nvfuser library failed with: Error in dlopen: libnvfuser_codegen.so: cannot open shared object file: No such file or directory (function LoadingNvfuserLibrary)
+Classification quantization flow script
+Namespace(data_dir='./', model_name='resnet50', disable_pcq=False, out_dir='./outputs', print_freq=20, threshold=-1.0, batch_size_train=1024, batch_size_test=1024, batch_size_onnx=1, seed=12345, ckpt_path='', ckpt_url='', pretrained=True, num_calib_batch=4, num_finetune_epochs=0, calibrator='max', percentile=[99.9, 99.99, 99.999, 99.9999], sensitivity=False, evaluate_onnx=False)
+Loading data
+Loading training data
+Took 0.2553274631500244
+Loading validation data
+Creating data loaders
+Initial evaluation:
+[W interface.cpp:47] Warning: Loading nvfuser library failed with: Error in dlopen: libnvfuser_codegen.so: cannot open shared object file: No such file or directory (function LoadingNvfuserLibrary)
+[W interface.cpp:47] Warning: Loading nvfuser library failed with: Error in dlopen: libnvfuser_codegen.so: cannot open shared object file: No such file or directory (function LoadingNvfuserLibrary)
+[W interface.cpp:47] Warning: Loading nvfuser library failed with: Error in dlopen: libnvfuser_codegen.so: cannot open shared object file: No such file or directory (function LoadingNvfuserLibrary)
+[W interface.cpp:47] Warning: Loading nvfuser library failed with: Error in dlopen: libnvfuser_codegen.so: cannot open shared object file: No such file or directory (function LoadingNvfuserLibrary)
+terminate called without an active exception
+Traceback (most recent call last):
+  File "/scratch/ssc10020/IndependentStudy/CML/run.py", line 449, in <module>
+    res = main(sys.argv[1:])
+          ^^^^^^^^^^^^^^^^^^
+  File "/scratch/ssc10020/IndependentStudy/CML/run.py", line 219, in main
+    top1_initial = evaluate(model, criterion, data_loader_test, device="cuda", print_freq=args.print_freq)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/scratch/ssc10020/IndependentStudy/CML/train.py", line 75, in evaluate
+    output = model(image)
+             ^^^^^^^^^^^^
+  File "/scratch/ssc10020/.conda/envs/cml/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1501, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/scratch/ssc10020/IndependentStudy/CML/resnet.py", line 336, in forward
+    return self._forward_impl(x)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/scratch/ssc10020/IndependentStudy/CML/resnet.py", line 319, in _forward_impl
+    x = self.conv1(x)
+        ^^^^^^^^^^^^^
+  File "/scratch/ssc10020/.conda/envs/cml/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1501, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/scratch/ssc10020/.conda/envs/cml/lib/python3.11/site-packages/pytorch_quantization-2.1.2-py3.11-linux-x86_64.egg/pytorch_quantization/nn/modules/quant_conv.py", line 129, in forward
+    output = F.conv2d(quant_input, quant_weight, self.bias, self.stride, self.padding, self.dilation,
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: GET was unable to find an engine to execute this computation
+==PROF== Connected to process 3717303 (/scratch/ssc10020/.conda/envs/cml/bin/python3.11)
+==ERROR== Error: ERR_NVGPUCTRPERM - The user does not have permission to access NVIDIA GPU Performance Counters on the target device 0. For instructions on enabling permissions and to get more information see https://developer.nvidia.com/ERR_NVGPUCTRPERM
+==PROF== Target process 3717566 terminated before first instrumented API call.
+==PROF== Disconnected from process 3717303
+==PROF== Target process 3717344 terminated before first instrumented API call.
+==PROF== Target process 3717500 terminated before first instrumented API call.
+==PROF== Target process 3717417 terminated before first instrumented API call.
+==PROF== Target process 3717343 terminated before first instrumented API call.
+==ERROR== The application returned an error code (1).
+==ERROR== An error occurred while trying to profile.
+==WARNING== No kernels were profiled.

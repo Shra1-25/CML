@@ -17,6 +17,7 @@ from torchvision.datasets import CIFAR10
 from torchvision.transforms import ToTensor
 from torch.utils.data.dataloader import DataLoader
 from torch.utils.data import random_split
+import torch.profiler as TF
 
 
 def train_one_epoch(model, criterion, optimizer, data_loader, device, epoch, args, model_ema=None, scaler=None):
@@ -62,13 +63,20 @@ def train_one_epoch(model, criterion, optimizer, data_loader, device, epoch, arg
         metric_logger.meters["img/s"].update(batch_size / (time.time() - start_time))
 
 
-def evaluate(model, criterion, data_loader, device, print_freq=100, log_suffix=""):
+def evaluate(model, criterion, data_loader, device, profile=False, print_freq=100, log_suffix=""):
     model.eval()
     metric_logger = utils.MetricLogger(delimiter="  ")
     header = f"Test: {log_suffix}"
 
     num_processed_samples = 0
+    if profile:
+        profiler = TF.profile(schedule=TF.schedule(wait=1, warmup=1, active=1, repeat=1), 
+                    on_trace_ready=TF.tensorboard_trace_handler('./log/resnet101_quantized'),
+                    record_shapes=True, profile_memory=True, with_stack=True)
+
     with torch.inference_mode():
+        if profile: 
+            profiler.start()
         for image, target in metric_logger.log_every(data_loader, print_freq, header):
             image = image.to(device, non_blocking=True)
             target = target.to(device, non_blocking=True)
@@ -83,6 +91,10 @@ def evaluate(model, criterion, data_loader, device, print_freq=100, log_suffix="
             metric_logger.meters["acc1"].update(acc1.item(), n=batch_size)
             metric_logger.meters["acc5"].update(acc5.item(), n=batch_size)
             num_processed_samples += batch_size
+            if profile:
+                profiler.step()
+        if profile:
+            profiler.stop()
     # gather the stats from all processes
 
     num_processed_samples = utils.reduce_across_processes(num_processed_samples)
